@@ -68,6 +68,8 @@ pak_handle_t* pak_open_write(const char* filename) {
     assert(handle);
     memset(handle, 0, sizeof(pak_handle_t));
     handle->file = fopen(filename, "r+b");
+    if (!handle->file)
+        handle->file = fopen(filename, "wb");
     handle->filename = filename;
     handle->root = NULL;
 
@@ -256,46 +258,40 @@ void pak_free_entry(pak_entry_t* entry) {
 }
 
 
-static uint64_t current_idx = 0;
-static pak_node_t* current_node = NULL;
-
-void build_node_tree_recursive(pak_handle_t* handle, pak_node_t* parent) {
+pak_node_t* build_node_tree_recursive(pak_handle_t* handle, pak_node_t* parent, pak_node_t* current_node, uint64_t* current_idx) {
     assert(handle);
     pak_node_t* tmp = pak_create_node();
-    tmp->entry = pak_get_entry_from_index(handle, current_idx);
-    strcpy(tmp->filename, pak_get_string_from_index(handle, current_idx));
+    tmp->entry = pak_get_entry_from_index(handle, *current_idx);
+    strcpy(tmp->filename, pak_get_string_from_index(handle, *current_idx));
     tmp->is_dir = PAK_ENTRY_IS_DIR(tmp->entry);
-    current_idx++;
+    (*current_idx)++;
 
-    if (parent && (!parent->child)) {
+    if (parent && (!parent->child))
         parent->child = tmp;
-        tmp->prev = parent;
-    } else {
-        current_node->next = tmp;
-        tmp->prev = current_node;
-    }
 
-    if (parent) {
+    if (parent)
         tmp->parent = parent;
-    }
 
+    current_node->next = tmp;
+    tmp->prev = current_node;
+
+    current_node = tmp;
     if (tmp->is_dir) {
         uint32_t tmpIdx = 0;
         while ((tmpIdx++) < tmp->entry->data_size_or_child_count) {
-            build_node_tree_recursive(handle, tmp);
+            current_node = build_node_tree_recursive(handle, tmp, current_node, current_idx);
         }
     }
-
-
     current_node = tmp;
+    return current_node;
 }
 
 void build_node_tree(pak_handle_t *handle) {
     assert(handle);
     assert(handle->header);
 
-    current_node = handle->root;
-
+    pak_node_t* current_node = handle->root;
+    uint64_t current_idx = 0;
     while (current_idx < handle->header->entry_count) {
         pak_node_t* tmp = pak_create_node();
 
@@ -311,11 +307,10 @@ void build_node_tree(pak_handle_t *handle) {
         if (tmp->is_dir) {
             int64_t tmpIdx = 0;
             while ((tmpIdx++) < tmp->entry->data_size_or_child_count) {
-                build_node_tree_recursive(handle, tmp);
+                current_node = build_node_tree_recursive(handle, tmp, current_node, &current_idx);
             }
+            current_node = tmp;
         }
-
-        current_node = tmp;
     }
 
     current_node->next = NULL;
