@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <inttypes.h>
-#include <util.h>
+#include "util.h"
 
 static char curpath[FILENAME_MAX] = {0};
 

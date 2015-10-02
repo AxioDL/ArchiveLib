@@ -14,7 +14,7 @@
 
 #include "pak.h"
 
-const char* argp_program_version = "Wiiking2 Pak Creator 0.1";
+const char* argp_program_version = "Pak Creator 0.1";
 const char* argp_program_bug_address = "<antidote.crk@gmail.com>";
 
 static struct argp_option options[] = {
@@ -22,7 +22,8 @@ static struct argp_option options[] = {
 {"make",    'm', 0, 0, "Create a pak from the specified directory, to the specified file", 0},
 {"dump",    'd', 0, 0, "Dump a pak from the specified file to the specified directory", 0},
 {"compress", 'c', 0, 0, "Compress each file before storing, if possible", 0},
-{"info",     'i', 0, 0, "Print pak statistics and contents", 0}
+{"info",     'i', 0, 0, "Print pak statistics and contents", 0},
+{0}
 };
 
 static char doc[] =

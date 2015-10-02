@@ -316,22 +316,21 @@ void build_node_tree(pak_handle_t *handle) {
     current_node->next = NULL;
 }
 
-static char curpath[FILENAME_MAX] = {0};
-pak_node_t* find_recursive(pak_node_t* node, const char* filename) {
+pak_node_t* find_recursive(pak_node_t* node, const char* filename, char** curpath) {
     assert(node);
     pak_node_t* ret = NULL;
     char tmp[FILENAME_MAX];
-    strcpy(tmp, curpath);
-    strcat(curpath, "/");
-    strcat(curpath, node->filename);
+    strcpy(tmp, *curpath);
+    strcat((*curpath), "/");
+    strcat((*curpath), node->filename);
 
-    if (!strcmp(curpath, filename))
+    if (!strcmp((*curpath), filename))
         ret = node;
 
     if (ret == NULL && node->is_dir) {
         pak_node_t* child = node->child;
         while (child != NULL) {
-            ret = find_recursive(child, filename);
+            ret = find_recursive(child, filename, curpath);
             if (ret)
                 break;
 
@@ -339,7 +338,7 @@ pak_node_t* find_recursive(pak_node_t* node, const char* filename) {
         }
     }
 
-    strcpy(curpath, tmp);
+    strcpy((*curpath), tmp);
 
     return ret;
 }
@@ -348,8 +347,9 @@ pak_node_t* pak_find_file(pak_handle_t* handle, const char* filepath) {
     assert(handle);
     pak_node_t* node = handle->root;
     pak_node_t* ret = NULL;
+    char curpath[FILENAME_MAX] = {'\0'};
     while (node != NULL) {
-        ret = find_recursive(node, filepath);
+        ret = find_recursive(node, filepath, (char**)&curpath);
         if (ret && !ret->is_dir)
             break;
 
@@ -364,8 +364,10 @@ pak_node_t* pak_find_dir(pak_handle_t* handle, const char* path) {
     assert(handle);
     pak_node_t* node = handle->root;
     pak_node_t* ret = NULL;
+    char curpath[FILENAME_MAX] = {'\0'};
+
     while (node != NULL) {
-        ret = find_recursive(node, path);
+        ret = find_recursive(node, path, (char**)&curpath);
         if (ret && ret->is_dir)
             break;
 
@@ -379,8 +381,9 @@ pak_node_t* pak_find(pak_handle_t* handle, const char* filepath) {
     assert(handle);
     pak_node_t* node = handle->root;
     pak_node_t* ret = NULL;
+    char curpath[FILENAME_MAX] = {'\0'};
     while (node != NULL) {
-        ret = find_recursive(node, filepath);
+        ret = find_recursive(node, filepath, (char**)&curpath);
         if (ret)
             break;
 
