@@ -39,9 +39,6 @@ void print_pak_info(const char* input) {
             node = node->next;
         }
 
-        pak_file_t* file = pak_open_file(pak, "templates/mp1/structs/PathCameraStruct.xml");
-        if (file)
-            printf("opened file %s\n", file->filepath);
         printf("%" PRIu64 " Files in %s\n", pak_get_entry_count(pak), input);
         printf("Target endian is %s\n", (pak_get_endian(pak) ? "Big" : "Little"));
         printf("Entry table starts at 0x%.8" PRIX64 "\n", pak_get_entry_start(pak));

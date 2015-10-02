@@ -404,7 +404,7 @@ pak_node_t* pak_find(pak_handle_t* handle, const char* filepath) {
 }
 
 pak_file_t* pak_create_file() {
-    pak_file_t* ret = pak_alloc(sizeof(pak_file_t*));
+    pak_file_t* ret = pak_alloc(sizeof(pak_file_t));
     memset(ret, 0, sizeof(pak_file_t));
     return ret;
 }
