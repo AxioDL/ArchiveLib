@@ -77,6 +77,7 @@ typedef struct _pak_file {
     pak_handle_t* handle;
     pak_node_t* node;
     int64_t position;
+    const char filepath[FILENAME_MAX];
 } pak_file_t;
 
 #ifdef __cplusplus

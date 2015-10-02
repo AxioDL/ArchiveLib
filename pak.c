@@ -324,16 +324,17 @@ void build_node_tree(pak_handle_t *handle) {
     current_node->next = NULL;
 }
 
-pak_node_t* find_recursive(pak_node_t* node, const char* filename, char** curpath) {
+pak_node_t* find_recursive(pak_node_t* node, const char* filename, char* curpath) {
     assert(node);
+    assert(curpath);
     pak_node_t* ret = NULL;
     char tmp[FILENAME_MAX];
-    strcpy(tmp, *curpath);
-    strcat((*curpath), "/");
-    strcat((*curpath), node->filename);
+    strcpy(tmp, curpath);
+    strcat(curpath, "/");
+    strcat(curpath, node->filename);
 
-    if (!strcmp((*curpath), filename))
-        ret = node;
+    if (!strcmp(curpath, filename))
+        return node;
 
     if (ret == NULL && node->is_dir) {
         pak_node_t* child = node->child;
@@ -346,7 +347,8 @@ pak_node_t* find_recursive(pak_node_t* node, const char* filename, char** curpat
         }
     }
 
-    strcpy((*curpath), tmp);
+    if (!ret)
+        strcpy(curpath, tmp);
 
     return ret;
 }
@@ -357,7 +359,7 @@ pak_node_t* pak_find_file(pak_handle_t* handle, const char* filepath) {
     pak_node_t* ret = NULL;
     char curpath[FILENAME_MAX] = {'\0'};
     while (node != NULL) {
-        ret = find_recursive(node, filepath, (char**)&curpath);
+        ret = find_recursive(node, filepath, curpath);
         if (ret && !ret->is_dir)
             break;
 
@@ -375,7 +377,7 @@ pak_node_t* pak_find_dir(pak_handle_t* handle, const char* path) {
     char curpath[FILENAME_MAX] = {'\0'};
 
     while (node != NULL) {
-        ret = find_recursive(node, path, (char**)&curpath);
+        ret = find_recursive(node, path, curpath);
         if (ret && ret->is_dir)
             break;
 
@@ -391,7 +393,7 @@ pak_node_t* pak_find(pak_handle_t* handle, const char* filepath) {
     pak_node_t* ret = NULL;
     char curpath[FILENAME_MAX] = {'\0'};
     while (node != NULL) {
-        ret = find_recursive(node, filepath, (char**)&curpath);
+        ret = find_recursive(node, filepath, curpath);
         if (ret)
             break;
 
@@ -413,14 +415,21 @@ void pak_free_file(pak_file_t* file) {
 
 pak_file_t* pak_open_file(pak_handle_t* handle, const char* filepath) {
     assert(handle);
+    char tmppath[FILENAME_MAX] = {'\0'};
+    if (filepath[0] != '/');
+        strcat(tmppath, "/");
+    strcat(tmppath, filepath);
+
     pak_file_t* ret = pak_create_file();
     ret->handle = handle;
-    ret->node = pak_find_file(handle, filepath);
-    if (!ret)
+    ret->node = pak_find_file(handle, tmppath);
+    if (!ret->node)
     {
         pak_free_file(ret);
-        ret = NULL;
+        return NULL;
     }
+
+    strcpy((char*)ret->filepath, tmppath);
     return ret;
 }
 
