@@ -17,7 +17,8 @@ static void build_node_tree(pak_handle_t* handle);
 pak_handle_t* pak_open_read(const char* filename) {
     pak_handle_t* handle = pak_alloc(sizeof(pak_handle_t));
     assert(handle);
-    memset(handle, 1, sizeof(pak_handle_t));
+    memset(handle, 0, sizeof(pak_handle_t));
+    memset((bool*)&handle->is_readonly, 1, 1);
     handle->file = fopen(filename, "rb");
     handle->filename = filename;
     handle->header = pak_create_header();
@@ -83,13 +84,18 @@ pak_handle_t* pak_open_write(const char* filename) {
 
 void pak_close(pak_handle_t* handle) {
     assert(handle);
-    fseek(handle->file, 0, SEEK_SET);
-    fwrite(handle->header, 1, sizeof(pak_header_t), handle->file);
+    if (!handle->is_readonly)
+    {
+        fseek(handle->file, 0, SEEK_SET);
+        fwrite(handle->header, 1, sizeof(pak_header_t), handle->file);
+    }
+
     free(handle->entry_table_data);
     free(handle->string_table_data);
     if (handle->root)
         pak_free_node(handle->root);
-    fclose(handle->file);
+    if (handle->file)
+        fclose(handle->file);
     pak_free(handle);
 }
 
@@ -272,7 +278,9 @@ pak_node_t* build_node_tree_recursive(pak_handle_t* handle, pak_node_t* parent, 
     if (parent)
         tmp->parent = parent;
 
-    current_node->next = tmp;
+    if (current_node != parent)
+        current_node->next = tmp;
+
     tmp->prev = current_node;
 
     current_node = tmp;
@@ -446,11 +454,12 @@ pak_node_t* pak_create_node() {
 
 void pak_free_node(pak_node_t* node) {
     assert(node);
-    if (node->next)
+    if (node->next && node->next != node)
         pak_free_node(node->next);
-    if (node->child)
+    if (node->is_dir && node->child)
         pak_free_node(node->child);
-    memset(node, 0, sizeof(pak_node_t));
+    node->next = NULL;
+    node->child = NULL;
 
     pak_free(node);
 }

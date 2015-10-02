@@ -76,6 +76,15 @@ int pak_file_or_dir(struct dirent* dent, uint32_t idx, FILE* entryFile, FILE* st
                     buf = tmp;
                 }
             }
+            else
+            {
+                data_len = (data_len + 31) & ~31;
+                void* tmp = malloc(data_len);
+                pak_clear(tmp, data_len);
+                memcpy(tmp, buf, st.st_size);
+                free(buf);
+                buf = tmp;
+            }
 
             fwrite(entry, 1, sizeof(pak_entry_t), entryFile);
             fclose(in);

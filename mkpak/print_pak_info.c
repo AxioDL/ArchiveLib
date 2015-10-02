@@ -45,6 +45,7 @@ void print_pak_info(const char* input) {
         printf("String table starts at 0x%.8" PRIX64 "\n", pak_get_string_table_offset(pak));
         printf("String table is %" PRIu64 " bytes long\n", pak_get_string_table_size(pak));
         printf("Data table starts at 0x%.8" PRIX64 "\n", pak_get_data_offset(pak));
+        pak_close(pak);
     } else {
         exit(EXIT_FAILURE);
     }
