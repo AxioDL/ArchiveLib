@@ -8,7 +8,6 @@
 static char curpath[FILENAME_MAX] = {0};
 
 void dump_node_recursive(pak_node_t* node, pak_handle_t* pak, bool verbose) {
-    return;
     char tmp[4096];
     strcpy(tmp, curpath);
     strcat(curpath, "/");
@@ -56,7 +55,6 @@ void dump_pak(char* input, char* output, bool verbose) {
         chdir(output);
         strcat(curpath, output);
 
-        /*
         // iterate through all the children of <root>
         pak_node_t* node = pak->root->next;
         while (node) {
@@ -65,7 +63,7 @@ void dump_pak(char* input, char* output, bool verbose) {
         }
 
         printf("Dumped %" PRIu64 " files\n", pak_get_entry_count(pak));
-        */
+
         pak_close(pak);
         exit(EXIT_SUCCESS);
     }
