@@ -114,7 +114,7 @@ uint64_t pak_get_string_table_size(pak_handle_t* header);
 void pak_set_data_offset(pak_handle_t* handle, uint64_t val);
 uint64_t pak_get_data_offset(pak_handle_t* handle);
 
-int32_t pak_get_index_from_entry(pak_handle_t* handle, pak_entry_t* entry);
+int64_t pak_get_index_from_entry(pak_handle_t* handle, pak_entry_t* entry);
 
 pak_node_t* pak_find_file(pak_handle_t* handle, const char* filepath);
 pak_node_t* pak_find_dir(pak_handle_t* handle, const char* path);

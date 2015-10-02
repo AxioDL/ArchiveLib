@@ -37,7 +37,7 @@ pak_handle_t* pak_open_read(const char* filename) {
         if (handle->header->magic != PAK_MAGIC || handle->header->version != PAK_VERSION)
             goto fail;
 
-        uint32_t entry_table_size = handle->header->entry_count * sizeof(pak_entry_t);
+        uint64_t entry_table_size = handle->header->entry_count * sizeof(pak_entry_t);
         handle->entry_table_data = malloc(entry_table_size);
         fseek(handle->file, handle->header->entry_start, SEEK_SET);
         if (fread(handle->entry_table_data, 1, entry_table_size, handle->file) != entry_table_size) {
@@ -229,7 +229,7 @@ const char* pak_get_string_from_index(pak_handle_t* handle, uint64_t index) {
     return (const char*)(handle->string_table_data + entry->string_offset);
 }
 
-int32_t pak_get_index_from_entry(pak_handle_t* handle, pak_entry_t* entry) {
+int64_t pak_get_index_from_entry(pak_handle_t* handle, pak_entry_t* entry) {
     assert(handle);
     assert(handle->header);
     uint64_t index = 0;
@@ -277,7 +277,7 @@ pak_node_t* build_node_tree_recursive(pak_handle_t* handle, pak_node_t* parent, 
 
     current_node = tmp;
     if (tmp->is_dir) {
-        uint32_t tmpIdx = 0;
+        int64_t tmpIdx = 0;
         while ((tmpIdx++) < tmp->entry->data_size_or_child_count) {
             current_node = build_node_tree_recursive(handle, tmp, current_node, current_idx);
         }
